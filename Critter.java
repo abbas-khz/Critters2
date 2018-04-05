@@ -1,5 +1,6 @@
 package assignment5;
 
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
 import javafx.scene.Scene;
@@ -17,7 +18,9 @@ public abstract class Critter {
 		SQUARE,
 		TRIANGLE,
 		DIAMOND,
-		STAR
+		STAR,
+		VSHAPE,
+		TSHAPE
 	}
 	
 	/* the default color is white, which I hope makes critters invisible by default
@@ -137,7 +140,7 @@ public abstract class Critter {
 	
 
 	
-	public static void displayWorld(Object pane) {} 
+//	public static void displayWorld(Object pane) {}
 	/* Alternate displayWorld, where you use Main.<pane> to reach into your
 	   display component.
 	   // public static void displayWorld() {}
@@ -201,18 +204,19 @@ public abstract class Critter {
 			return babies;
 		}
 	}
-	
 
 
-	public static void displayWorld(GridPane gp){
-		try {
-			makeCritter("Craig");
-		}
-		catch (Exception e){
-			System.out.println("bye");
-		}
+	/**
+	 * makes a visual representation of the world on a passed gridPane
+	 * @param pane gridpane to add the drawn canvas
+	 */
+	public static void displayWorld(Object pane){
+		GridPane gp;
+		gp=(GridPane)pane;
 		GraphicsContext gc;
 		gc=canvas.getGraphicsContext2D();
+
+
 		gc.clearRect(0,0,canvasWidth,canvasHeight);
 		if(gp.getChildren().contains(canvas)){
 			gp.getChildren().remove(canvas);
@@ -221,7 +225,7 @@ public abstract class Critter {
 		gc.fillRect(0,0,canvasWidth,canvasHeight);
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(1);
-		gp.setColumnSpan(canvas,2);
+		gp.setColumnSpan(canvas,3);
 		gp.setConstraints(canvas,0,16);
 
 		double rowSize;
@@ -261,30 +265,64 @@ public abstract class Critter {
 			shape=c.viewShape();
 
 			gc.setStroke(c.viewOutlineColor());
+			gc.setLineWidth(2);
 			gc.setFill(c.viewFillColor());
-			drawDiamond(gc,c,rowSize,colSize);
-//			switch (shape){
-//				case STAR:
-//					break;
-//				case CIRCLE:
-//					gc.fillOval(c.x_coord*rowSize+1,c.y_coord*colSize+1,colSize-2,rowSize-2);
-//					gc.strokeOval(c.x_coord*rowSize+1,c.y_coord*colSize+1,colSize-2,rowSize-2);
-//					break;
-//				case SQUARE:
-//					gc.fillRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
-//					gc.strokeRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
-//					break;
-//				case DIAMOND:
-//					drawDiamond(gc,c,rowSize,colSize);
-//					break;
-//				case TRIANGLE:
-//					drawTriangle(gc,c,rowSize,colSize);
-//					break;
-//			}
+
+			switch (shape){
+				case STAR:
+					drawStar(gc,c,rowSize,colSize);
+					break;
+				case CIRCLE:
+					gc.fillOval(c.x_coord*rowSize+1,c.y_coord*colSize+1,colSize-2,rowSize-2);
+					gc.strokeOval(c.x_coord*rowSize+1,c.y_coord*colSize+1,colSize-2,rowSize-2);
+					break;
+				case SQUARE:
+					gc.fillRect(c.x_coord*rowSize+2,c.y_coord*colSize+2,colSize-4,rowSize-4);
+					gc.strokeRect(c.x_coord*rowSize+2,c.y_coord*colSize+2,colSize-4,rowSize-4);
+					break;
+				case DIAMOND:
+					drawDiamond(gc,c,rowSize,colSize);
+					break;
+				case TRIANGLE:
+					drawTriangle(gc,c,rowSize,colSize);
+					break;
+			}
 		}
+
+		gc.setStroke(Color.BLACK);
+		gc.setLineWidth(2);
+
+
+		for(double i=0;(canvasHeight-i)>=0 ;i+=rowSize) {
+
+			gc.strokeLine(0, i, rowSize*Params.world_height, i);
+			if(Math.abs(canvasHeight-(i+rowSize))<=0.000000000001){
+				i=canvasHeight;
+				gc.strokeLine(0, i, rowSize*Params.world_height, i);
+				break;
+			}
+
+		}
+
+		for (double i=0;(canvasWidth-i)>=0;i+=colSize){
+			gc.strokeLine(i,0,i,colSize*Params.world_width);
+			if(Math.abs(canvasWidth-(i+colSize))<=0.000000000001){
+				i=canvasWidth;
+				gc.strokeLine(i,0,i,colSize*Params.world_width);
+				break;
+			}
+		}
+
 		gp.getChildren().addAll(canvas);
 	}
 
+	/**
+	 * draws a triangle shape on a canvas
+	 * @param gc graphics context to draw on
+	 * @param c critter to draw (used to get coordinates
+	 * @param rowSize the pixel vertical row size
+	 * @param colSize the pixel horizontal column size
+	 */
 	private static void drawTriangle(GraphicsContext gc,Critter c, double rowSize, double colSize){
 		double []xPoints={c.x_coord*colSize,c.x_coord*colSize+colSize/2,(c.x_coord+1)*colSize,c.x_coord*colSize};
 		double []yPoints={(c.y_coord+1)*rowSize,(c.y_coord)*rowSize,(c.y_coord+1)*rowSize,(c.y_coord+1)*rowSize};
@@ -294,6 +332,13 @@ public abstract class Critter {
 
 	}
 
+	/**
+	 * draws a diamond shape on a canvas
+	 * @param gc graphics context to draw on
+	 * @param c critter to draw (used to get coordinates
+	 * @param rowSize the pixel vertical row size
+	 * @param colSize the pixel horizontal column size
+	 */
 	private static void drawDiamond(GraphicsContext gc,Critter c,double rowSize,double colSize){
 		double []xPoints={c.x_coord*colSize,c.x_coord*colSize+colSize/2,(c.x_coord+1)*colSize,c.x_coord*colSize+colSize/2,c.x_coord*colSize};
 		double []yPoints={c.y_coord*rowSize+rowSize/2,c.y_coord*rowSize,c.y_coord*rowSize+rowSize/2,(c.y_coord+1)*rowSize,c.y_coord*rowSize+rowSize/2};
@@ -301,7 +346,25 @@ public abstract class Critter {
 		gc.strokePolygon(xPoints,yPoints,5);
 	}
 
+	/**
+	 * draws a star shape on a canvas
+	 * @param gc graphics context to draw on
+	 * @param c critter to draw (used to get coordinates
+	 * @param rowSize the pixel vertical row size
+	 * @param colSize the pixel horizontal column size
+	 */
+	private static void drawStar(GraphicsContext gc,Critter c,double rowSize,double colSize){
+		double []xPoints={c.x_coord*colSize,c.x_coord*colSize+colSize*0.37,c.x_coord*colSize+colSize/2,c.x_coord*colSize+colSize*0.63,
+				c.x_coord*colSize+colSize,c.x_coord*colSize+0.674*colSize,c.x_coord*colSize+0.79*colSize,c.x_coord*colSize+colSize/2,
+				c.x_coord*colSize+0.21*colSize,c.x_coord*colSize+0.326*colSize,c.x_coord*colSize};
+		double []yPoints={c.y_coord*rowSize+0.3085*rowSize,c.y_coord*rowSize+0.3085*rowSize,c.y_coord*rowSize,(c.y_coord+0.3085)*rowSize,
+				(c.y_coord+0.3085)*rowSize,(c.y_coord+0.601)*rowSize,(c.y_coord+1)*rowSize,(c.y_coord+0.76)*rowSize,(c.y_coord+1)*rowSize,
+				(c.y_coord+0.601)*rowSize,(c.y_coord+0.3085)*rowSize};
 
+		gc.fillPolygon(xPoints,yPoints,11);
+		gc.strokePolygon(xPoints,yPoints,11);
+
+	}
 	/**
 	 * Place all the critters in their position in a 2d
 	 * string array
@@ -497,6 +560,10 @@ public abstract class Critter {
 	 * @param critters List of Critters.
 	 */
 	public static String runStats(List<Critter> critters) {
+		String result;
+		result=("" + critters.size() + " critters as follows -- ");
+
+
 		System.out.print("" + critters.size() + " critters as follows -- ");
 		java.util.Map<String, Integer> critter_count = new java.util.HashMap<String, Integer>();
 		for (Critter crit : critters) {
@@ -510,11 +577,13 @@ public abstract class Critter {
 		}
 		String prefix = "";
 		for (String s : critter_count.keySet()) {
+			result+=(prefix + s + ":" + critter_count.get(s));
 			System.out.print(prefix + s + ":" + critter_count.get(s));
 			prefix = ", ";
 		}
+		result+="\n";
 		System.out.println();
-		return null;
+		return result;
 	}
 
 	/* the TestCritter class allows some critters to "cheat". If you want to
