@@ -13,7 +13,12 @@ package assignment5;
  * This Critter does not ever move but fights and reproduces every encounter if energy level over 70.
  * It's a Venus Flytrap
  * The child gets the same number of leaves as the parent when it is reproduces
- * 
+ *
+ * Additions for assignment5 by Abbas Al Khazal:
+ *
+ * reproduction function changed so that it used look and only leaves offspring if the direction chosen
+ * is empty or has Algae in it
+ *
  */
 
 
@@ -53,13 +58,18 @@ public class Critter1 extends Critter {
 	}
 	
 	//Critter1 reproduces every encounter if energy level over 70 and always fights
+	//adjusted for assignment5 by Abbas Al Khazal to include Critter.look
 	@Override
 	public boolean fight(String oponent) {
 		// TODO Auto-generated method stub
 		if(getEnergy() > 70) {
 			Critter1 c = new Critter1();
 			c.leaves = leaves;
-			reproduce(c, Critter.getRandomInt(8));
+			int dir=Critter.getRandomInt(8);
+			String lookValue=look(dir,false);
+			if(lookValue==null || lookValue=="@"){
+				reproduce(c, dir);
+			}
 		}
 		
 		return true;

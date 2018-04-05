@@ -8,6 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.util.List;
 
@@ -108,7 +109,7 @@ public abstract class Critter {
 		return null;
 	}
 
-	private static final double canvasWidth=500;
+	private static final double canvasWidth=550;
 	private static final double canvasHeight=500;
 	private static Canvas canvas=new Canvas(canvasWidth,canvasHeight);
 	
@@ -238,6 +239,7 @@ public abstract class Critter {
 		for(double i=0;(canvasHeight-i)>=0 ;i+=rowSize) {
 
 			gc.strokeLine(0, i, rowSize*Params.world_height, i);
+			
 			if(Math.abs(canvasHeight-(i+rowSize))<=0.000000000001){
 				i=canvasHeight;
 				gc.strokeLine(0, i, rowSize*Params.world_height, i);
@@ -273,18 +275,34 @@ public abstract class Critter {
 					drawStar(gc,c,rowSize,colSize);
 					break;
 				case CIRCLE:
+					gc.clearRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
 					gc.fillOval(c.x_coord*rowSize+1,c.y_coord*colSize+1,colSize-2,rowSize-2);
 					gc.strokeOval(c.x_coord*rowSize+1,c.y_coord*colSize+1,colSize-2,rowSize-2);
 					break;
 				case SQUARE:
+					gc.clearRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
 					gc.fillRect(c.x_coord*rowSize+2,c.y_coord*colSize+2,colSize-4,rowSize-4);
 					gc.strokeRect(c.x_coord*rowSize+2,c.y_coord*colSize+2,colSize-4,rowSize-4);
 					break;
 				case DIAMOND:
+					gc.clearRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
 					drawDiamond(gc,c,rowSize,colSize);
 					break;
 				case TRIANGLE:
+					gc.clearRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
 					drawTriangle(gc,c,rowSize,colSize);
+					break;
+				case VSHAPE:
+					gc.clearRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
+					gc.setFont(new Font(rowSize*(1.4)));
+					gc.fillText("V",c.x_coord*colSize+colSize/15,c.y_coord*rowSize,rowSize);
+					gc.strokeText("V",c.x_coord*colSize+colSize/15,c.y_coord*rowSize,rowSize);
+					break;
+				case TSHAPE:
+					gc.clearRect(c.x_coord*rowSize,c.y_coord*colSize,colSize,rowSize);
+					gc.setFont(new Font(rowSize*(1.4)));
+					gc.fillText("T",c.x_coord*colSize+colSize/10,c.y_coord*rowSize,rowSize);
+					gc.strokeText("T",c.x_coord*colSize+colSize/10,c.y_coord*rowSize,rowSize);
 					break;
 			}
 		}
@@ -364,6 +382,16 @@ public abstract class Critter {
 		gc.fillPolygon(xPoints,yPoints,11);
 		gc.strokePolygon(xPoints,yPoints,11);
 
+	}
+
+	/**
+	 * draws a Vshape on a canvas
+	 * @param gc graphics context to draw on
+	 * @param c critter to draw (used to get coordinates
+	 * @param rowSize the pixel vertical row size
+	 * @param colSize the pixel horizontal column size
+	 */
+	private static void drawVShape(GraphicsContext gc,Critter c,double rowSize,double colSize){
 	}
 	/**
 	 * Place all the critters in their position in a 2d

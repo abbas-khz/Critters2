@@ -32,11 +32,11 @@ public class Critter2 extends Critter {
 	@Override
 	public CritterShape viewShape(){return CritterShape.TSHAPE;}
 	@Override
-	public javafx.scene.paint.Color viewFillColor(){return javafx.scene.paint.Color.PURPLE;}
+	public javafx.scene.paint.Color viewFillColor(){return javafx.scene.paint.Color.BROWN;}
 	@Override
-	public javafx.scene.paint.Color viewOutlineColor(){return javafx.scene.paint.Color.PURPLE;}
+	public javafx.scene.paint.Color viewOutlineColor(){return javafx.scene.paint.Color.YELLOW;}
 	@Override
-	public javafx.scene.paint.Color viewColor() { return javafx.scene.paint.Color.PURPLE;}
+	public javafx.scene.paint.Color viewColor() { return javafx.scene.paint.Color.BROWN;}
 	
 	//Critter2 sits in one place and reproduces if it has good health 
 	//if the health is from 100 to 50 then run. Less than that then walk because it will be tired.
