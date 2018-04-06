@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.lang.reflect.Method;
 
 public class Main extends Application{
 	private Canvas canvas;
@@ -40,7 +40,8 @@ public class Main extends Application{
 	private GraphicsContext gc;
 	private static String myPackage;
 	private long counter=0;
-
+	private boolean setUpComboBoxes=false;
+	private int[] saveVals={Params.look_energy_cost, Params.walk_energy_cost, Params.run_energy_cost, Params.refresh_algae_count};
 	static {
 		myPackage = Critter.class.getPackage().toString().split(" ")[1];
 	}
@@ -91,34 +92,21 @@ public class Main extends Application{
 		Text t3=new Text("Add Critters to world:");
 		gp.setConstraints(t3,0,4);
 		gp.getChildren().add(t3);
-//		TextField t3_field=new TextField("type");
-//		t3_field.setMaxHeight(5);
-//		gp.setConstraints(t3_field,0,6);
-//		t3_field.setDisable(true);
-//		gp.getChildren().add(t3_field);
-//		t3_field.setMaxWidth(60);
-//		TextField t3_field2=new TextField("number");
-//		t3_field2.setMaxHeight(5);
-//		gp.setConstraints(t3_field2,1,6);
-//		t3_field2.setDisable(true);
-//		t3_field2.setMaxWidth(60);
-//		gp.getChildren().addAll(t3_field2);
 
 		ComboBox typesOfCritters=new ComboBox();
-		for(String type:critterTypes){ typesOfCritters.getItems().add(type);}
+//		for(String type:critterTypes){ typesOfCritters.getItems().add(type);}
 		gp.setConstraints(typesOfCritters,0,6);
 		Spinner<Integer> critterNumber=new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,100,1));
 		critterNumber.setEditable(true);
 		gp.setConstraints(critterNumber,1,6);
 		typesOfCritters.setDisable(true);
 		critterNumber.setDisable(true);
+		critterNumber.setMaxWidth(70);
 		typesOfCritters.setValue("Craig");
+		typesOfCritters.setMaxWidth(120);
 		gp.getChildren().addAll(typesOfCritters,critterNumber);
 
-		//combo box commented out for possible future addition
-//		ComboBox cb=new ComboBox();
-//		cb.getItems().addAll("Critter1","Craig1");
-//		gp.add(cb,0,10);
+
 
 		Text t4=new Text("Critter addition Status");
 		t4.setFill(Color.BLUE);
@@ -155,24 +143,28 @@ public class Main extends Application{
 
 		Button seedButton = new Button("set Seed");
 		gp.setConstraints(seedButton,4,0);
+		gp.setHalignment(seedButton,HPos.CENTER);
 		TextField seedField=new TextField("Enter seed");
+		seedField.setMaxWidth(120);
+		seedButton.setMaxWidth(70);
+		gp.setHalignment(seedField,HPos.CENTER);
 		seedField.setOnKeyTyped(event -> {
 			seedField.setStyle("-fx-text-fill: black");
 		});
-		seedField.setMaxSize(100,5);
 		gp.setConstraints(seedField,4,1);
 		gp.getChildren().addAll(seedButton,seedField);
 //		gp.getChildren().addAll(seedButton);
 
 		Button quitButton=new Button("Quit");
-		gp.setConstraints(quitButton,2,12);
+		gp.setConstraints(quitButton,3,12);
 		gp.setHalignment(quitButton,HPos.LEFT);
 		gp.getChildren().add(quitButton);
 
 		Button animateButton=new Button("Animate");
-		gp.setConstraints(animateButton,3,6);
+		gp.setConstraints(animateButton,4,8);
 		gp.getChildren().add(animateButton);
 		animateButton.setDisable(true);
+		gp.setHalignment(animateButton,HPos.CENTER);
 
 		int timeInterval=5;
 		Spinner<Integer> timeIntervalBox=new Spinner<>();
@@ -185,20 +177,30 @@ public class Main extends Application{
 		gp.setConstraints(timeIntervalBox,4,6);
 		gp.getChildren().add(timeIntervalBox);
 		timeIntervalBox.setDisable(true);
-		gp.setHalignment(timeIntervalBox,HPos.RIGHT);
+		gp.setHalignment(timeIntervalBox,HPos.CENTER);
 
 		Text animateSpeed=new Text("Animation speed");
 		gp.setConstraints(animateSpeed,4,4);
-		gp.setHalignment(animateSpeed,HPos.RIGHT);
+		gp.setHalignment(animateSpeed,HPos.CENTER);
 		gp.getChildren().add(animateSpeed);
 
-//		KeyFrame keyFrame=new new KeyFrame(Duration.millis(2500/timeInterval), new EventHandler<ActionEvent>() {
-//			@Override
-//			public void handle(ActionEvent event) {
-//				Critter.worldTimeStep();
-//				Critter.displayWorld(gp);
-//			}
-//		});
+
+		Text worldStats=new Text();
+		worldStats.setFill(Color.PURPLE);
+		gp.setConstraints(worldStats,0,14);
+		gp.setColumnSpan(worldStats,4);
+		gp.getChildren().addAll(worldStats);
+
+		Button statsButton=new Button("Run stats for:");
+		gp.setConstraints(statsButton,3,6);
+		ComboBox statsMenu = new ComboBox();
+		statsMenu.setDisable(true);
+		statsButton.setDisable(true);
+		gp.setConstraints(statsMenu,3,8);
+		statsMenu.setMaxWidth(120);
+		statsMenu.setValue("Craig");
+		gp.getChildren().addAll(statsButton,statsMenu);
+
 		Timeline timeline=new Timeline();
 
 		//Adding critters to world (add command)
@@ -208,7 +210,6 @@ public class Main extends Application{
 			try {
 //				className=t3_field.getText();
 //				critterNum=Integer.parseInt(t3_field2.getText());
-
 				className=typesOfCritters.getValue().toString();
 				critterNum=Integer.parseInt(critterNumber.getEditor().getText());
 
@@ -227,6 +228,7 @@ public class Main extends Application{
 				t4.setFill(Color.RED);
 			}
 			Critter.displayWorld(gp);
+			makeStats(worldStats,critterTypes);
 		});
 
 		//generate and the world initially
@@ -252,28 +254,45 @@ public class Main extends Application{
 			stepButton.setDisable(false);
 			animateButton.setDisable(false);
 			timeIntervalBox.setDisable(false);
+			resetButton.setDisable(false);
+			createButton.setDisable(true);
+			statsMenu.setDisable(false);
+			statsButton.setDisable(false);
 
-			File folder=new File(System.getProperty("user.dir")+"\\src\\assignment5");
+			if(!setUpComboBoxes) {
+				File folder = new File(System.getProperty("user.dir") + "\\src\\assignment5");
 
-			for(File entry:folder.listFiles()){
-				String clsName;
-				clsName=entry.getName();
-				clsName=clsName.replaceAll(".java","");
-				try {
-					Class<?> cls=Class.forName(myPackage+"."+clsName);
-					Critter crt=(Critter)cls.newInstance();
-					if(crt instanceof Critter){
-						typesOfCritters.getItems().add(clsName);
+				for (File entry : folder.listFiles()) {
+					String clsName;
+					clsName = entry.getName();
+					clsName = clsName.replaceAll(".java", "");
+					try {
+						Class<?> cls = Class.forName(myPackage + "." + clsName);
+						Critter crt = (Critter) cls.newInstance();
+						if (crt instanceof Critter) {
+							typesOfCritters.getItems().add(clsName);
+							statsMenu.getItems().add(clsName);
+							critterTypes.add(clsName);
+						}
+
+
+					} catch (Exception e) {
 					}
-
-
 				}
-				catch (Exception e){ }
+				Params.look_energy_cost = saveVals[0];
+				Params.walk_energy_cost = saveVals[1];
+				Params.run_energy_cost = saveVals[2];
+				Params.refresh_algae_count = saveVals[3];
+				setUpComboBoxes=true;
 			}
+			makeStats(worldStats, critterTypes);
 		});
 
 		//resets world and remove the current view
 		resetButton.setOnAction(event -> {
+			animationStatus=true;
+			animate(timeline);
+			animateButton.setText("Animate");
 			Critter.clearWorld();
 			width_box.setDisable(false);
 			height_box.setDisable(false);
@@ -290,6 +309,12 @@ public class Main extends Application{
 			stepNumber.setDisable(true);
 			animateButton.setDisable(true);
 			timeIntervalBox.setDisable(true);
+
+			worldStats.setText("");
+			resetButton.setDisable(true);
+			createButton.setDisable(false);
+			statsButton.setDisable(true);
+			statsMenu.setDisable(true);
 		});
 
 		//do world time steps
@@ -301,7 +326,10 @@ public class Main extends Application{
 //				stepNumber.setEditable(false);
 			stepNumber.getValueFactory().setValue(1);
 //			stepNumber.setEditable(true);
-			for (int i=0;i<number_of_steps;i++){ Critter.worldTimeStep(); }
+			for (int i=0;i<number_of_steps;i++){
+				Critter.worldTimeStep();
+				makeStats(worldStats,critterTypes);
+			}
 			Critter.displayWorld(gp);
 		});
 
@@ -327,12 +355,22 @@ public class Main extends Application{
 
 		//set animation with speed
 		animateButton.setOnAction(event -> {
+			if(!animationStatus){
+				addButton.setDisable(true);
+				timeIntervalBox.setDisable(true);
+				stepButton.setDisable(true);
+			}else {
+				addButton.setDisable(false);
+				timeIntervalBox.setDisable(false);
+				stepButton.setDisable(false);
+			}
 			timeline.getKeyFrames().clear();
 			timeline.getKeyFrames().add(new KeyFrame(Duration.millis(2500 / timeIntervalBox.getValue()), new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
 					Critter.worldTimeStep();
 					Critter.displayWorld(gp);
+					makeStats(worldStats,critterTypes);
 				}
 			}));
 			if(animateButton.getText().compareTo("Animate")==0){
@@ -344,6 +382,25 @@ public class Main extends Application{
 
 		});
 
+		//runs the stat function for a particular critter
+		statsButton.setOnAction(event -> {
+//			try {
+//				String statClassName=(String)statsMenu.getValue();
+//				List<Critter> statCritters=Critter.getInstances(statClassName);
+//				Class specificCritter=Class.forName(myPackage+"."+statClassName);
+//				Method method= specificCritter.getMethod("runStats",List.class);
+//				method.invoke(statCritters.getClass(),statCritters);
+//			}
+//			catch (Exception e){}
+
+			String statClassName=(String)statsMenu.getValue();
+
+
+			runStatsCommand(statClassName);
+
+
+		});
+
 		gp.setPadding(new Insets(10,10,10,10));
 		gp.setHgap(5);
 		gp.setVgap(5);
@@ -351,7 +408,7 @@ public class Main extends Application{
 
 	}
 
-	private void runStatsCommand(String className,Text status){
+	private void runStatsCommand(String className){
 		Stage stage=new Stage();
 		FlowPane fp=new FlowPane();
 		stage.setTitle("Stats for "+className);
@@ -362,18 +419,34 @@ public class Main extends Application{
 			Method method = critterType.getMethod("runStats", List.class);
 			statsResult=(String)method.invoke(className.getClass(), critters);
 		}
-		catch (Exception e){
-			status.setText("Error processing");
-			status.setFill(Color.RED);
-		}
-		Scene scene=new Scene(fp,500,100);
+		catch (Exception e){ }
+		Scene scene=new Scene(fp,750,100);
 
 		stage.setScene(scene);
 		Text txt=new Text();
 		txt.setText(statsResult);
 		fp.getChildren().add(txt);
+		fp.setColumnHalignment(HPos.CENTER);
 		stage.show();
 
+	}
+
+	private void makeStats(Text stats,List<String> critterTypes){
+		List<Critter> critterStats;
+		stats.setText("");
+		int counter=0;
+		try {
+			for (String type : critterTypes) {
+				critterStats=Critter.getInstances(type);
+				counter++;
+				stats.setText(stats.getText()+type+": "+critterStats.size()+"   ");
+				if(counter==4){
+					counter=0;
+					stats.setText(stats.getText()+"\n");
+				}
+			}
+		}
+		catch (Exception e){}
 	}
 
 	private void animate(Timeline timeline){
